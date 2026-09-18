@@ -40,7 +40,33 @@ export default function Doctors() {
     }
   };
 
-  useEffect(() => { fetchDoctors(); }, []);
+  const handleClear = async () => {
+    setSearch({ specialization: "", city: "" });
+    setLoading(true);
+    try {
+      const { data } = await api.get("/doctors");
+      setDoctors(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const loadDoctors = async () => {
+      setLoading(true);
+      try {
+        const { data } = await api.get("/doctors");
+        setDoctors(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDoctors();
+  }, []);
 
   return (
     <div style={styles.page}>
@@ -53,7 +79,7 @@ export default function Doctors() {
         <input style={styles.input} placeholder="City (e.g. Lahore)"
           value={search.city} onChange={(e) => setSearch({ ...search, city: e.target.value })} />
         <button style={styles.btn} onClick={fetchDoctors}>Search</button>
-        <button style={{ ...styles.btn, background: "#888" }} onClick={() => { setSearch({ specialization: "", city: "" }); setTimeout(fetchDoctors, 100); }}>Clear</button>
+        <button style={{ ...styles.btn, background: "#888" }} onClick={handleClear}>Clear</button>
       </div>
 
       {loading ? (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -30,12 +30,8 @@ export default function MyAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) { navigate("/login"); return; }
-    fetchAppointments();
-  }, []);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
+    if (!user?._id) return;
     setLoading(true);
     try {
       const { data } = await api.get(`/appointments?patient=${user._id}`);
@@ -45,7 +41,15 @@ export default function MyAppointments() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    fetchAppointments();
+  }, [user, navigate, fetchAppointments]);
 
   const cancelAppointment = async (id) => {
     if (!window.confirm("Cancel this appointment?")) return;
